@@ -1,6 +1,7 @@
 module Main where
 
-import Lib
+import Client
+import Types
 
 main :: IO ()
 main = someFunc
