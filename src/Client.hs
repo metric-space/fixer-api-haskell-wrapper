@@ -28,7 +28,10 @@ getBasic url = do
   msg <- liftIO . infoMsgIO $ " Sent GET request to " ++ (show url)
   lift . tell $ msg
   (catch
-     ((liftIO $ get url) >>= (\x -> right $ x ^. responseBody))
+     (do resp <- liftIO $ fmap (\x -> x ^. responseBody) . get $ url
+         msg <- liftIO $ infoMsgIO $ " Server sent back " ++ (show resp)
+         lift . tell $ msg
+         right resp)
      (\exception -> do
         msg <- liftIO $ errorMsgIO . displayException $ exception
         lift . tell $ msg
