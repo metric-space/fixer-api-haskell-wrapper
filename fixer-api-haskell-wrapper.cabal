@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Logger, Client, Types
+  exposed-modules:     Logger, Client, Types, Utils
   build-depends:       base >= 4.7 && < 5
                      , wreq
                      , time
@@ -29,6 +29,7 @@ library
                      , aeson
                      , containers
                      , text
+                     , parsec
   default-language:    Haskell2010
 
 executable fixer-api-haskell-wrapper-exe

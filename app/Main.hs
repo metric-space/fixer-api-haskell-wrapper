@@ -12,6 +12,7 @@ import Logger
 import Network.HTTP.Types.Status
 import Text.Read (readMaybe)
 import Types
+import Utils
 import Web.Scotty
 
 constant_base_url :: String
@@ -45,7 +46,16 @@ getWithDate =
   get
     "/date/:date"
     (do date <- param "date"
-        commonAction $ constant_historical_url date)
+        case (parseFixerDate date) of
+          Left y ->
+            (do liftIO
+                  $(errorMsgIO $
+                    "Date :" ++
+                    date ++ " sent was/is not valid \n error msg: " ++ "{{" ++ (show y) ++ "}}") >>=
+                  putStr
+                status status500
+                text "Invalid Date")
+          Right x -> commonAction $ constant_historical_url date)
 
 getWithBase :: ScottyM ()
 getWithBase =

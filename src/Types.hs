@@ -4,10 +4,12 @@
 module Types
   ( Country(..)
   , FixerResponse(..)
+  , FixerDate(..)
   ) where
 
 import Data.Aeson
 import Data.Map.Lazy (Map)
+import Data.Monoid (mconcat)
 import qualified Data.Text as Text
 import GHC.Generics
 
@@ -209,3 +211,12 @@ data FixerResponse = FixerResponse
 instance FromJSON FixerResponse
 
 instance ToJSON FixerResponse
+
+data FixerDate = FixerDate
+  { year :: Int
+  , month :: Int
+  , day :: Int
+  }
+
+instance Show FixerDate where
+  show x = mconcat [(show $ year x), "-", (show $ month x), "-", (show $ day x)]
