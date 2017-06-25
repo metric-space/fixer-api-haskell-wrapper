@@ -8,7 +8,9 @@ import Control.Monad.Trans.Either
 import Control.Monad.Trans.Writer
 import Data.Either
 import Data.Monoid
+import Logger
 import Network.HTTP.Types.Status
+import Text.Read (readMaybe)
 import Types
 import Web.Scotty
 
@@ -22,7 +24,7 @@ constant_historical_url :: String -> String
 constant_historical_url = (++) constant_base_url
 
 constant_set_base_url :: Country -> String
-constant_set_base_url = (++) constant_base_url . show
+constant_set_base_url x = mconcat [constant_base_url, "latest?base=", show x]
 
 constant_convert_between_url :: Country -> Country -> String
 constant_convert_between_url x y =
@@ -31,12 +33,47 @@ constant_convert_between_url x y =
 commonAction :: String -> ActionM ()
 commonAction url =
   (do (x, logs) <- liftIO (runWriterT . runEitherT . getFixerUrl $ url)
-      liftIO (putStrLn logs)
+      liftIO (putStr logs)
       either (\x -> status status500 >> text "Please try later") json x)
 
 -- routes
 getLatest :: ScottyM ()
 getLatest = get "/" (commonAction constant_latest_url)
 
+getWithDate :: ScottyM ()
+getWithDate =
+  get
+    "/date/:date"
+    (do date <- param "date"
+        commonAction $ constant_historical_url date)
+
+getWithBase :: ScottyM ()
+getWithBase =
+  get
+    "/:base"
+    (do base <- param $ "base"
+        case (readMaybe base :: Maybe Country) of
+          Nothing ->
+            (do liftIO $(errorMsgIO $ "Country Code :" ++ base ++ " sent was/is not valid") >>=
+                  putStr
+                status status500
+                text "Check Country Code")
+          Just code -> commonAction . constant_set_base_url $ code)
+
+getConvertFromBaseTo :: ScottyM ()
+getConvertFromBaseTo =
+  get
+    "/:base/:to"
+    (do codes@[base, to] <- mapM param ["base", "to"]
+        case (mapM readMaybe codes :: Maybe [Country]) of
+          Nothing ->
+            (do liftIO $
+                  (errorMsgIO $
+                   "One or both Country codes (" ++ base ++ "," ++ to ++ ") sent were/are not valid") >>=
+                  putStr
+                status status500
+                text "Check Country Code")
+          Just [c1, c2] -> commonAction $ constant_convert_between_url c1 c2)
+
 main :: IO ()
-main = scotty 8000 getLatest
+main = scotty 8000 (getLatest >> getWithDate >> getWithBase >> getConvertFromBaseTo)
