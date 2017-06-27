@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Logger, Client, Types, Utils
+  exposed-modules:     Logger, Client, Types, Utils, Server
   build-depends:       base >= 4.7 && < 5
                      , wreq
                      , time
@@ -30,6 +30,8 @@ library
                      , containers
                      , text
                      , parsec
+                     , http-types
+                     , scotty
   default-language:    Haskell2010
 
 executable fixer-api-haskell-wrapper-exe
@@ -39,9 +41,6 @@ executable fixer-api-haskell-wrapper-exe
   build-depends:       base
                      , fixer-api-haskell-wrapper
                      , scotty
-                     , either
-                     , transformers
-                     , http-types
   default-language:    Haskell2010
 
 test-suite fixer-api-haskell-wrapper-test
