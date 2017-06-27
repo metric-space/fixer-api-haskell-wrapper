@@ -17,21 +17,20 @@ import Types
 import Utils
 import Web.Scotty
 
-constant_base_url :: String
-constant_base_url = "https://api.fixer.io/"
+baseUrl :: String
+baseUrl = "https://api.fixer.io/"
 
-constant_latest_url :: String
-constant_latest_url = constant_base_url ++ "latest"
+latestUrl :: String
+latestUrl = baseUrl ++ "latest"
 
-constant_historical_url :: String -> String
-constant_historical_url = (++) constant_base_url
+historicalUrl :: String -> String
+historicalUrl = (++) baseUrl
 
-constant_set_base_url :: Country -> String
-constant_set_base_url x = mconcat [constant_base_url, "latest?base=", show x]
+setBaseCountryUrl :: Country -> String
+setBaseCountryUrl x = mconcat [baseUrl, "latest?base=", show x]
 
-constant_convert_between_url :: Country -> Country -> String
-constant_convert_between_url x y =
-  mconcat [constant_base_url, "latest?symbols=", show x, ",", show y]
+convertBetweenUrl :: Country -> Country -> String
+convertBetweenUrl x y = mconcat [baseUrl, "latest?symbols=", show x, ",", show y]
 
 commonAction :: String -> ActionM ()
 commonAction url =
@@ -41,7 +40,7 @@ commonAction url =
 
 -- routes
 getLatest :: ScottyM ()
-getLatest = get "/" (commonAction constant_latest_url)
+getLatest = get "/" (commonAction latestUrl)
 
 getWithDate :: ScottyM ()
 getWithDate =
@@ -57,7 +56,7 @@ getWithDate =
                   putStr
                 status status500
                 text "Invalid Date")
-          Right x -> commonAction $ constant_historical_url date)
+          Right x -> commonAction $ historicalUrl date)
 
 getWithBase :: ScottyM ()
 getWithBase =
@@ -70,7 +69,7 @@ getWithBase =
                   putStr
                 status status500
                 text "Check Country Code")
-          Just code -> commonAction . constant_set_base_url $ code)
+          Just code -> commonAction . setBaseCountryUrl $ code)
 
 getConvertFromBaseTo :: ScottyM ()
 getConvertFromBaseTo =
@@ -85,7 +84,7 @@ getConvertFromBaseTo =
                   putStr
                 status status500
                 text "Check Country Code")
-          Just [c1, c2] -> commonAction $ constant_convert_between_url c1 c2)
+          Just [c1, c2] -> commonAction $ convertBetweenUrl c1 c2)
 
 -- routes are sequentially tried till the correct route gets matched
 appRoutes :: ScottyM ()
