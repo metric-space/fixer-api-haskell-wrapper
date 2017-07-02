@@ -6,7 +6,7 @@ module Server
 
 import Client
 import Control.Monad.IO.Class
-import Control.Monad.Trans.Either
+import Control.Monad.Trans.Except
 import Control.Monad.Trans.Writer
 import Data.Either
 import Data.Monoid
@@ -34,7 +34,7 @@ convertBetweenUrl x y = mconcat [baseUrl, "latest?symbols=", show x, ",", show y
 
 commonAction :: String -> ActionM ()
 commonAction url =
-  (do (x, logs) <- liftIO (runWriterT . runEitherT . getFixerUrl $ url)
+  (do (x, logs) <- liftIO (runWriterT . runExceptT . getFixerUrl $ url)
       liftIO (putStr logs)
       either (\x -> status status500 >> text "Please try later") json x)
 

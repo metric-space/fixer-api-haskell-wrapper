@@ -5,8 +5,10 @@ module Types
   ( Country(..)
   , FixerResponse(..)
   , FixerDate(..)
+  , MyParseException(..)
   ) where
 
+import Control.Exception (Exception)
 import Data.Aeson
 import Data.Map.Lazy (Map)
 import Data.Monoid (mconcat)
@@ -220,3 +222,9 @@ data FixerDate = FixerDate
 
 instance Show FixerDate where
   show x = mconcat [(show $ year x), "-", (show $ month x), "-", (show $ day x)]
+
+data MyParseException =
+  MyParseException String
+  deriving (Show)
+
+instance Exception MyParseException
